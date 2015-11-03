@@ -224,6 +224,28 @@ function transform {
   fi
 }
 
+
+function dump {
+    local BRANCH="$(current_branch)"
+    git checkout $BRANCH
+    local LEN=$(git log --oneline | wc -l)
+    local FIRST=$(git log --oneline | tail -1 | cut -d" " -f 1)
+    mkdir slides
+    local COMMIT=$FIRST
+
+    for i in `seq 0 $LEN`; do
+        git checkout $COMMIT
+        local LABEL=`printf %03d $(expr $i + 1)`
+        cat $1 > slides/$1-$LABEL.txt
+        local COMMIT=$(git log --oneline $COMMIT..$BRANCH | tail -1 | cut -d" " -f 1)
+    done
+}
+
+
+
+
+
+
 if [ "$1" = "next" ]; then
   move_to "$(next_commit)" "$2"
 elif [ "$1" = "prev" ]; then
@@ -246,6 +268,8 @@ elif [ "$1" = "delete" ]; then
   delete
 elif [ "$1" = "transform" ]; then
   transform
+elif [ "$1" = "dump" ]; then
+  dump $2
 else
   usage
   exit 1
